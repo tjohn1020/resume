@@ -17,3 +17,8 @@ color: #113f67;
 h3{
   color: #113f67;
 }
+
+/*******************Class Selectors***************************/
+
+.circular {border-radius:100%
+}
