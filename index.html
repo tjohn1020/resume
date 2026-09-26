@@ -10,6 +10,10 @@
 </head>
 
 <body>
+  <svg id="network-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g id="network-group"></g>
+  </svg>
+
   <div class="container">
     <header class="top-section">
       <img class="circular" src="Images/Pic2.jpg" alt="Tyler S. Johnson profile picture">
@@ -158,25 +162,185 @@
 
     <section>
       <h3>Core Skills</h3>
-      <div class="skills-grid">
-        <span>Healthcare Technology</span>
-        <span>Project Management</span>
-        <span>Operations Leadership</span>
-        <span>Stakeholder Management</span>
-        <span>Team Management</span>
-        <span>Networking</span>
-        <span>Low Voltage Electronics</span>
-        <span>Virtual Machine Deployment</span>
-        <span>Linux</span>
-        <span>Healthcare Systems Integration</span>
-        <span>IP Nurse Call Systems</span>
-        <span>Budgeting</span>
-        <span>Customer Relations</span>
-        <span>Front-End Web Development</span>
-        <span>Technical Troubleshooting</span>
+      <div class="terminal-window" aria-label="Core Skills terminal">
+        <div class="terminal-topbar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-line">
+            <span class="prompt">user@tyler:~$</span>
+            <span class="typed-text" id="typedSkills"></span>
+            <span class="cursor">▋</span>
+          </div>
+          <div id="terminalOutput" class="terminal-output"></div>
+        </div>
       </div>
     </section>
   </div>
+
+  <script>
+    const skills = [
+      'Healthcare Technology',
+      'Project Management',
+      'Operations Leadership',
+      'Stakeholder Management',
+      'Networking',
+      'Linux',
+      'Virtual Machine Deployment',
+      'Healthcare Systems Integration',
+      'Technical Troubleshooting'
+    ];
+
+    const typedText = document.getElementById('typedSkills');
+    const terminalOutput = document.getElementById('terminalOutput');
+    let index = 0;
+    let charIndex = 0;
+    let currentSkill = '';
+    let isDeleting = false;
+
+    function tick() {
+      if (!typedText) return;
+
+      if (!isDeleting) {
+        currentSkill = skills[index].slice(0, charIndex + 1);
+        charIndex++;
+
+        typedText.textContent = currentSkill;
+
+        if (charIndex === skills[index].length) {
+          isDeleting = true;
+          setTimeout(tick, 1100);
+          return;
+        }
+      } else {
+        currentSkill = skills[index].slice(0, charIndex - 1);
+        charIndex--;
+        typedText.textContent = currentSkill;
+
+        if (charIndex === 0) {
+          isDeleting = false;
+          index = (index + 1) % skills.length;
+          setTimeout(tick, 300);
+          return;
+        }
+      }
+
+      const delay = isDeleting ? 45 : 100;
+      setTimeout(tick, delay);
+    }
+
+    function printInitialOutput() {
+      const lines = [
+        { text: '$ npm run skills -- --focus healthcare-it', className: 'success' },
+        { text: '✔ operations leadership enabled', className: 'info' },
+        { text: '✔ project delivery configured', className: 'info' },
+        { text: '✔ clinical systems integration ready', className: 'success' }
+      ];
+
+      lines.forEach((line, i) => {
+        setTimeout(() => {
+          const el = document.createElement('div');
+          el.className = line.className;
+          el.textContent = line.text;
+          terminalOutput.appendChild(el);
+        }, i * 240);
+      });
+    }
+
+    const svg = document.getElementById('network-group');
+    const networkSvg = document.getElementById('network-bg');
+
+    function createNetwork() {
+      if (!svg || !networkSvg) return;
+
+      const nodeCount = 18;
+      const nodes = [];
+
+      for (let i = 0; i < nodeCount; i++) {
+        const x = Math.random() * 1440;
+        const y = Math.random() * 900;
+        nodes.push({ x, y, r: Math.random() * 3 + 2.2, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, pulse: Math.random() * 1000 });
+      }
+
+      nodes.forEach((node, index) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', node.r);
+        circle.setAttribute('fill', '#7dd3fc');
+        circle.setAttribute('opacity', '0.7');
+        circle.setAttribute('data-index', index);
+        svg.appendChild(circle);
+      });
+
+      const lines = [];
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < 180) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', a.x);
+            line.setAttribute('y1', a.y);
+            line.setAttribute('x2', b.x);
+            line.setAttribute('y2', b.y);
+            line.setAttribute('stroke', 'rgba(125, 211, 252, 0.25)');
+            line.setAttribute('stroke-width', '1');
+            line.setAttribute('opacity', String(Math.max(0.18, 1 - dist / 180)));
+            svg.insertBefore(line, svg.firstChild);
+            lines.push(line);
+          }
+        }
+      }
+
+      function animate() {
+        const circles = svg.querySelectorAll('circle');
+        const connections = svg.querySelectorAll('line');
+
+        nodes.forEach((node, i) => {
+          node.x += node.vx;
+          node.y += node.vy;
+
+          if (node.x < 0 || node.x > 1440) node.vx *= -1;
+          if (node.y < 0 || node.y > 900) node.vy *= -1;
+
+          const circle = circles[i];
+          if (circle) {
+            const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 800 + node.pulse);
+            circle.setAttribute('cx', node.x);
+            circle.setAttribute('cy', node.y);
+            circle.setAttribute('r', (node.r + pulse * 0.7).toString());
+            circle.setAttribute('opacity', (0.4 + pulse * 0.6).toString());
+          }
+        });
+
+        connections.forEach((line, i) => {
+          const x1 = line.getAttribute('x1');
+          const y1 = line.getAttribute('y1');
+          const x2 = line.getAttribute('x2');
+          const y2 = line.getAttribute('y2');
+          const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 1000 + i);
+          line.setAttribute('opacity', (0.16 + pulse * 0.35).toString());
+          line.setAttribute('stroke', `rgba(125, 211, 252, ${0.18 + pulse * 0.28})`);
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    createNetwork();
+    printInitialOutput();
+    setTimeout(tick, 700);
+  </script>
 </body>
 
 </html>
